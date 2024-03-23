@@ -4,7 +4,7 @@ use cli::InitArgs;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::Path;
 
 mod cli;
 mod styles;
@@ -33,13 +33,13 @@ fn main() -> Result<()> {
 }
 
 fn init_project(init_args: InitArgs) -> Result<()> {
-    let default_config_path = PathBuf::from(".miniDT.toml");
+    let default_config_path = Path::new(".miniDT.toml");
     println!("Initializing a new project");
 
     let config = if let Some(config_path) = init_args.config_file {
         load_config(&config_path)?
     } else {
-        load_config(&default_config_path)?
+        load_config(default_config_path)?
     };
 
     create_directory(&config.macros_folder);
@@ -49,7 +49,7 @@ fn init_project(init_args: InitArgs) -> Result<()> {
     Ok(())
 }
 
-fn load_config(config_file_path: &PathBuf) -> Result<Config> {
+fn load_config(config_file_path: &Path) -> Result<Config> {
     if std::fs::metadata(config_file_path).is_err() {
         // If config file doesn't exist, create a default one
         let default_config = Config::default();
@@ -67,7 +67,7 @@ fn load_config(config_file_path: &PathBuf) -> Result<Config> {
     Ok(config)
 }
 
-fn save_config(config: &Config, config_file_path: &PathBuf) -> Result<()> {
+fn save_config(config: &Config, config_file_path: &Path) -> Result<()> {
     let toml = toml::to_string(config)?;
 
     let mut file = File::create(config_file_path)
