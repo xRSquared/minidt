@@ -2,7 +2,7 @@ use crate::styles::get_styles;
 use clap::{Args, Parser, Subcommand};
 use serde::Serialize;
 use std::path::PathBuf;
-/// Simple program to greet a person
+
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 #[command(name = "miniDT")]
@@ -23,6 +23,7 @@ pub enum Commands {
 
 #[derive(Args, Debug)]
 pub struct InitArgs {
+    /// Path to the config file [default is .miniDT.toml]
     pub config_file: Option<PathBuf>,
 }
 

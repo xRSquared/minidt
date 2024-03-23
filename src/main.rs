@@ -12,14 +12,16 @@ mod styles;
 #[derive(Debug, Deserialize, Serialize)]
 struct Config {
     macros_folder: String,
-    models_folder: String,
+    templates_folder: String,
+    outputs_folder: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
             macros_folder: "macros".to_string(),
-            models_folder: "models".to_string(),
+            templates_folder: "models".to_string(),
+            outputs_folder: "compiled".to_string(),
         }
     }
 }
@@ -43,7 +45,8 @@ fn init_project(init_args: InitArgs) -> Result<()> {
     };
 
     create_directory(&config.macros_folder);
-    create_directory(&config.models_folder);
+    create_directory(&config.templates_folder);
+    create_directory(&config.outputs_folder);
 
     println!("Initialized a new project");
     Ok(())
