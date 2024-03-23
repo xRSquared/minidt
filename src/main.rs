@@ -7,6 +7,7 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 
 mod cli;
+mod styles;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Config {
@@ -27,6 +28,7 @@ fn main() -> Result<()> {
     let args = cli::Cli::parse();
     match args.commands {
         | cli::Commands::Init(init_args) => init_project(init_args),
+        | cli::Commands::Compile(compile_args) => compile_sql(compile_args),
     }
 }
 
@@ -80,4 +82,9 @@ fn save_config(config: &Config, config_file_path: &PathBuf) -> Result<()> {
 fn create_directory(name: &str) {
     // Errors aren't really errors. If  directory already exists, just ignore it
     std::fs::create_dir(name).unwrap_or(())
+}
+
+fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
+    println!("Compiling SQL to remove Jinja");
+    Ok(())
 }
