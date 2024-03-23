@@ -1,27 +1,25 @@
-use std::path::PathBuf;
+use crate::styles::get_styles;
 use clap::{Args, Parser, Subcommand};
 use serde::Serialize;
-use crate::styles::get_styles;
+use std::path::PathBuf;
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-#[command(name="miniDT")]
+#[command(name = "miniDT")]
 #[command(about,long_about=None)]
 #[command(styles=get_styles())]
 pub struct Cli {
     #[command(subcommand)]
-    pub commands:Commands,
+    pub commands: Commands,
 }
 
 #[derive(Subcommand, Debug)]
-pub enum Commands{
+pub enum Commands {
     /// Initialize a new project
     Init(InitArgs),
     /// Compile SQL to remove jinja
     Compile(CompileArgs),
 }
-
-
 
 #[derive(Args, Debug)]
 pub struct InitArgs {
@@ -37,12 +35,11 @@ pub struct CompileArgs {
     pub output: Option<PathBuf>,
 
     /// Output type
-    #[clap(short='t',long, default_value_t, value_enum)]
+    #[clap(short = 't', long, default_value_t, value_enum)]
     pub output_type: OutputType,
 }
 
-
-#[derive(clap::ValueEnum,Debug,Clone,Default, Serialize)]
+#[derive(clap::ValueEnum, Debug, Clone, Default, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum OutputType {
     #[default]
