@@ -37,7 +37,7 @@ fn main() -> Result<()> {
     }
 }
 
-fn find_project_root(config_filename: &str) -> Result<PathBuf> {
+fn find_project_config(config_filename: &str) -> Result<PathBuf> {
     let mut current_dir = std::env::current_dir().expect("to get current directory");
 
     loop {
@@ -55,7 +55,7 @@ fn find_project_root(config_filename: &str) -> Result<PathBuf> {
 }
 
 fn is_project_initialized(config_filename: &str) -> Option<PathBuf> {
-    match find_project_root(config_filename) {
+    match find_project_config(config_filename) {
         | Ok(config_path) => Some(config_path),
         | Err(_) => None,
     }
@@ -100,7 +100,7 @@ fn create_defualt_config(config_file_path: &Path) -> Result<Config> {
 fn load_config(config_file_path: Option<&Path>) -> Result<Config> {
     let file_path = match config_file_path {
         | Some(path) => path.to_owned(),
-        | None => find_project_root(constants::CONFIG_FILE_NAME)?,
+        | None => find_project_config(constants::CONFIG_FILE_NAME)?,
     };
 
     let mut file = File::open(file_path)?;
@@ -133,15 +133,25 @@ fn create_directory(name: &str) {
 fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     println!("Compiling SQL to remove Jinja");
 
+    // Fetch project root directory
+    let project_root = find_project_config(constants::CONFIG_FILE_NAME)?;
+
     // Initialize MiniJinja environment with a loader
     let mut env = Environment::new();
 
-    // path to template folder from config
-    // TODO: make this work from any directory nested within the project
+    // Path to template folder from config
     let config = load_config(None)?;
 
-    env.set_loader(path_loader(config.templates_folder));
+    // Get the absolute path to the templates folder based on the project root
+    let templates_abs_path =
+        std::fs::canonicalize(project_root.parent().unwrap().join(config.templates_folder))
+            .unwrap();
+    println!("{:?}", templates_abs_path);
 
+    // Set the loader with the absolute path to the templates folder
+    env.set_loader(path_loader(templates_abs_path));
+
+    println!("Loading templates from {:?}", compile_args.file);
     // Compile SQL template
     let tmpl = env.get_template(compile_args.file.to_str().unwrap())?;
     let compiled_sql = tmpl.render(context! {})?;
