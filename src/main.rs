@@ -9,6 +9,7 @@ use std::path::Path;
 use std::{fs::File, path::PathBuf};
 
 mod cli;
+mod constants;
 mod styles;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -36,14 +37,34 @@ fn main() -> Result<()> {
     }
 }
 
+fn find_project_root(config_filename: &str) -> Result<PathBuf> {
+    let mut current_dir = std::env::current_dir().expect("to get current directory");
+
+    loop {
+        let config_file_path = current_dir.join(config_filename);
+        if config_file_path.is_file() {
+            return Ok(config_file_path);
+        }
+
+        if !current_dir.pop() {
+            // We have reached the root directory
+            break;
+        }
+    }
+    Err(anyhow!("\u{1b}[1;31mNo Configuration file found.\u{1b}[0m"))
+}
+
 fn init_project(init_args: InitArgs) -> Result<()> {
-    let default_config_path = Path::new(".miniDT.toml");
     println!("Initializing a new project");
+    // TODO: Check if the project is already initialized and error with warning
 
     let config = if let Some(config_path) = init_args.config_file {
-        load_config(&config_path)?
+        load_config(Some(&config_path))?
     } else {
-        load_config(default_config_path)?
+        match load_config(None) {
+            | Ok(config) => config,
+            | Err(_) => create_defualt_config(Path::new(constants::CONFIG_FILE_NAME))?,
+        }
     };
 
     create_directory(&config.macros_folder);
@@ -54,16 +75,22 @@ fn init_project(init_args: InitArgs) -> Result<()> {
     Ok(())
 }
 
-fn load_config(config_file_path: &Path) -> Result<Config> {
-    if std::fs::metadata(config_file_path).is_err() {
-        // If config file doesn't exist, create a default one
-        let default_config = Config::default();
-        save_config(&default_config, config_file_path)?;
+fn create_defualt_config(config_file_path: &Path) -> Result<Config> {
+    // If config file doesn't exist, create a default one
+    let default_config = Config::default();
+    save_config(&default_config, config_file_path)?;
 
-        return Ok(default_config);
-    }
+    Ok(default_config)
+}
 
-    let mut file = File::open(config_file_path)?;
+fn load_config(config_file_path: Option<&Path>) -> Result<Config> {
+    let file_path = match config_file_path {
+        | Some(path) => path.to_owned(),
+        | None => find_project_root(constants::CONFIG_FILE_NAME)?,
+    };
+
+    let mut file = File::open(file_path)?;
+
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
@@ -97,7 +124,7 @@ fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
 
     // path to template folder from config
     // TODO: make this work from any directory nested within the project
-    let config = load_config(Path::new(".miniDT.toml")).unwrap();
+    let config = load_config(None)?;
 
     env.set_loader(path_loader(config.templates_folder));
 
