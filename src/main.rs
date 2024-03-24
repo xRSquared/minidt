@@ -54,13 +54,27 @@ fn find_project_root(config_filename: &str) -> Result<PathBuf> {
     Err(anyhow!("\u{1b}[1;31mNo Configuration file found.\u{1b}[0m"))
 }
 
+fn is_project_initialized(config_filename: &str) -> Option<PathBuf> {
+    match find_project_root(config_filename) {
+        | Ok(config_path) => Some(config_path),
+        | Err(_) => None,
+    }
+}
+
 fn init_project(init_args: InitArgs) -> Result<()> {
     println!("Initializing a new project");
-    // TODO: Check if the project is already initialized and error with warning
 
     let config = if let Some(config_path) = init_args.config_file {
         load_config(Some(&config_path))?
     } else {
+        // NOTE: Check if the project is already initialized and error with warning
+        if let Some(config_path) = is_project_initialized(constants::CONFIG_FILE_NAME) {
+            return Err(anyhow!(
+            format!("\u{1b}[1;33mProject already initialized.\u{1b}[0m\n Configuration file found at:  {:?}.\n Skipping initialization.", config_path),
+        ));
+        }
+
+        // Can do this better, but for now good enough...
         match load_config(None) {
             | Ok(config) => config,
             | Err(_) => create_defualt_config(Path::new(constants::CONFIG_FILE_NAME))?,
