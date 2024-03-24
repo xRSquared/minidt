@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use cli::InitArgs;
+use minijinja::{context, path_loader, Environment};
 use serde::{Deserialize, Serialize};
-use std::fs::File;
+
 use std::io::prelude::*;
 use std::path::Path;
+use std::{fs::File, path::PathBuf};
 
 mod cli;
 mod styles;
@@ -89,5 +91,62 @@ fn create_directory(name: &str) {
 
 fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     println!("Compiling SQL to remove Jinja");
+
+    // Initialize MiniJinja environment with a loader
+    let mut env = Environment::new();
+
+    // path to template folder from config
+    // TODO: make this work from any directory nested within the project
+    let config = load_config(Path::new(".miniDT.toml")).unwrap();
+
+    env.set_loader(path_loader(config.templates_folder));
+
+    // Compile SQL template
+    let tmpl = env.get_template(compile_args.file.to_str().unwrap())?;
+    let compiled_sql = tmpl.render(context! {})?;
+
+    // Determine output directory path
+    // Determine output file path
+    let output_path = if let Some(output) = compile_args.output {
+        output
+    } else {
+        // If no output path is provided, construct the output directory based on the input file's parent directory
+        let mut output_dir = PathBuf::from(&config.outputs_folder);
+        if let Some(parent_dir) = compile_args.file.parent() {
+            output_dir.push(parent_dir);
+        }
+
+        // Create the output directory if it doesn't exist
+        std::fs::create_dir_all(&output_dir)?;
+
+        // NOTE: remove ".jinja" from the stem and keeping the extension ".sql"
+        let mut output_filename = compile_args
+            .file
+            .file_stem()
+            .ok_or_else(|| anyhow!("Invalid file name"))?
+            .to_owned();
+
+        if let Some(filename) = output_filename.to_str() {
+            if let Some(idx) = filename.find(".jinja.") {
+                output_filename = filename[..idx].to_string().into();
+            }
+        }
+
+        output_filename = Path::new(&output_filename)
+            .with_extension("sql")
+            .file_name()
+            .ok_or_else(|| anyhow!("Invalid file name"))?
+            .to_owned();
+
+        output_dir.push(output_filename);
+        output_dir
+    };
+
+    // Write compiled SQL to output file
+    std::fs::write(&output_path, compiled_sql)?;
+
+    println!("Compiled SQL saved to {:?}", output_path);
+
+    println!("{}", tmpl.render(context! {}).unwrap());
     Ok(())
 }
