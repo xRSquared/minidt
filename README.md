@@ -1,39 +1,48 @@
 <div align="center">
-  <p><strong>MiniDT: a simple but powerful jinja compiler for SQL</strong></p>
+  <p><strong>MiniDT: A Simple Yet Powerful Jinja Compiler for SQL</strong></p>
 </div>
 
-MiniDT is a powerful tool that allows you to use Jinja2 templates to generate SQL queries.
-It is designed to be a lightweight alternative to dbt, for cases where dbt is too much, and raw SQL is too little.
-All without the need for a database connection, or a complex setup!
+MiniDT is a lightweight and efficient tool designed to leverage the power of Jinja2(MiniJinja)
+templates for generating SQL queries. It serves as a versatile alternative
+to heavier frameworks like dbt, offering flexibility without the need for
+complex setups or database connections.
+
+> Perfect for situations where dbt is too much, and raw SQL falls short.
 
 As simple as:
-
-```bash
-pipx install minidt
-minidt init
-```
-
-Now you can use MiniDT to compile your SQL templates:
-
-```bash
-minidt compile my_template.sql -o my_query.sql
-```
 
 ## Getting Started
 
 ### Installation
 
-### Setup
+To install MiniDT, clone the repository:
 
-Before using MiniDT, you need to create a `.minidt` file in the root of your project.
-This is where you can define your configuration settings.
-
-By Defualt, MiniDT will look for macros in the `macros` directory, and templates
-in the `templates` directory. You can change these paths in the `.minidt` file:
-
-## Design
-
-Because we never make any assumptions about the data, we can't provide any data validation or type checking.
-
+```bash
+git clone git@github.com:xRSquared/minidt.git
 ```
-```
+
+## Features
+
+- **Streamlined Workflow**: Write your SQL code and compile with ease.
+- **Flexible Templating**: Enjoy the power of Jinja2 templating without the complexity.
+- **Lightweight and Fast**: With minimal setup requirements and optimized performance,
+MiniDT keeps your workflow agile
+
+## Why MiniDT?
+
+MiniDT acts as a convenient wrapper around Jinja,
+enhancing it with syntax enhancements and optimized workflows.
+Whether you're driven by the need for simplicity, restricted by company policies,
+or simply seeking to supercharge your SQL templating capabilities,
+MiniDT is your go-to solution.
+
+> Jinja + SQL = ❤️
+
+## Contribution
+
+Contributions are welcome! Feel free to submit bug reports, feature requests,
+or pull requests via GitHub.
+
+## License
+
+MiniDT is licensed under the MIT License.
