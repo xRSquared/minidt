@@ -1,0 +1,25 @@
+edition                    = "2021"
+group_imports              = "StdExternalCrate"
+imports_granularity        = "Crate"
+match_arm_leading_pipes    = "Always"
+match_block_trailing_comma = true
+use_field_init_shorthand   = true
+use_try_shorthand          = true # replace try! macro with `?` shorthand
+wrap_comments              = true
+
+# IMPORTANT: these are unstable options
+brace_style                 = "PreferSameLine"
+combine_control_expr        = false # false creates more readable control expressions
+condense_wildcard_suffixes  = true # defaults to js style tuple unpacking
+fn_single_line              = true # Put single-expression functions on a single line
+force_multiline_blocks      = true # more readable match statements
+format_code_in_doc_comments = true
+format_macro_matchers       = true
+format_strings              = true
+hex_literal_case            = "Upper"
+imports_layout              = "HorizontalVertical"
+indent_style                = "Visual"
+normalize_comments          = true
+reorder_impl_items          = true
+unstable_features           = true
+where_single_line           = true # NOTE: maybe change to false

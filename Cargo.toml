@@ -1,0 +1,14 @@
+[package]
+name = "minidt"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anstyle = "1.0.6"
+anyhow = "1.0.81"
+clap = { version = "4.5.3", features = ["derive"] }
+minijinja = { version = "1.0.15", features = ["loader"] }
+serde = { version = "1.0.197", features = ["derive"] }
+toml = "0.8.12"
