@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Result};
 use minijinja::{context, path_loader, Environment};
-use std::{io::Write, path::{Path, PathBuf}};
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use crate::{
     config::{self, Config},
@@ -19,9 +22,13 @@ pub fn compile_template(input_path: &Path, output_path: Option<&Path>) -> Result
     let config = config::load_config(None)?;
 
     let project_root = utils::find_project_config(constants::CONFIG_FILE_NAME)?;
-    let templates_abs_path =
-        std::fs::canonicalize(project_root.parent().unwrap().join(&config.templates_folder))
-            .unwrap();
+    let templates_abs_path = std::fs::canonicalize(
+        project_root
+            .parent()
+            .unwrap()
+            .join(&config.templates_folder),
+    )
+    .unwrap();
 
     let input_path = resolve_input_path(input_path, &templates_abs_path)?;
 
@@ -29,11 +36,14 @@ pub fn compile_template(input_path: &Path, output_path: Option<&Path>) -> Result
     env.set_loader(path_loader(templates_abs_path));
 
     // Load and render the template
-    let tmpl = env.get_template(input_path.to_str().ok_or_else(|| anyhow!("Invalid Template"))?)?;
+    let tmpl = env.get_template(
+        input_path
+            .to_str()
+            .ok_or_else(|| anyhow!("Invalid Template"))?,
+    )?;
     let compiled_sql = tmpl.render(context! {})?;
 
-    let output_path = resolve_output_path(output_path, &input_path,&config)?;
-
+    let output_path = resolve_output_path(output_path, &input_path, &config)?;
 
     write_output_file(&output_path, &compiled_sql)?;
     println!("Compiled SQL saved to {:?}", output_path);
@@ -54,25 +64,16 @@ fn resolve_input_path(input_path: &Path, templates_abs_path: &PathBuf) -> Result
     }
 }
 
-/// Resolve the output file path relative to the outputs folder.
-fn _resolve_output_path(output_path: &Path, outputs_folder: &str) -> Result<PathBuf> {
-    if output_path.is_absolute() {
-        Ok(output_path.to_path_buf())
-    } else {
-        let output_dir = Path::new(outputs_folder);
-        let output_path = output_dir.join(output_path);
-        Ok(output_path)
-    }
-}
-
 /// Resolve the output file path.
-fn resolve_output_path(output_path: Option<&Path>, input_path: &Path,config:&Config) -> Result<PathBuf> {
-
+fn resolve_output_path(
+    output_path: Option<&Path>,
+    input_path: &Path,
+    config: &Config,
+) -> Result<PathBuf> {
     if let Some(output) = output_path {
         Ok(output.to_path_buf())
     } else {
-
-    let project_root = utils::find_project_config(constants::CONFIG_FILE_NAME)?;
+        let project_root = utils::find_project_config(constants::CONFIG_FILE_NAME)?;
         let output_dir = project_root.parent().unwrap().join(&config.outputs_folder);
         let mut output_dir = output_dir.clone();
         if let Some(parent_dir) = input_path.parent() {
