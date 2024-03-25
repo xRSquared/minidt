@@ -1,5 +1,6 @@
 use crate::cli::InitArgs;
 use crate::constants;
+use crate::utils;
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
@@ -8,38 +9,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::path::PathBuf;
-
-///NOTE:  utils ////////////////////
-pub fn find_project_config(config_filename: &str) -> Result<PathBuf> {
-    let mut current_dir = std::env::current_dir().expect("to get current directory");
-
-    loop {
-        let config_file_path = current_dir.join(config_filename);
-        if config_file_path.is_file() {
-            return Ok(config_file_path);
-        }
-
-        if !current_dir.pop() {
-            // We have reached the root directory
-            break;
-        }
-    }
-    Err(anyhow!("\u{1b}[1;31mNo Configuration file found.\u{1b}[0m"))
-}
-
-fn is_project_initialized(config_filename: &str) -> Option<PathBuf> {
-    match find_project_config(config_filename) {
-        | Ok(config_path) => Some(config_path),
-        | Err(_) => None,
-    }
-}
-
-fn create_directory(name: &str) {
-    // Errors aren't really errors. If  directory already exists, just ignore it
-    std::fs::create_dir(name).unwrap_or(())
-}
-
-//////NOTE: end of utils ////////////////////////
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
@@ -51,9 +20,9 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            macros_folder: "macros".to_string(),
-            templates_folder: "models".to_string(),
-            outputs_folder: "compiled".to_string(),
+            macros_folder: constants::MACROS_FOLDER.to_string(),
+            templates_folder: constants::TEMPLATES_FOLDER.to_string(),
+            outputs_folder: constants::OUTPUTS_FOLDER.to_string(),
         }
     }
 }
@@ -69,7 +38,7 @@ pub fn create_defualt_config(config_file_path: &Path) -> Result<Config> {
 pub fn load_config(config_file_path: Option<&Path>) -> Result<Config> {
     let file_path = match config_file_path {
         | Some(path) => path.to_owned(),
-        | None => find_project_config(constants::CONFIG_FILE_NAME)?,
+        | None => utils::find_project_config(constants::CONFIG_FILE_NAME)?,
     };
 
     let mut file = File::open(file_path)?;
@@ -120,4 +89,18 @@ pub fn init_project(init_args: InitArgs) -> Result<()> {
 
     println!("Initialized a new project");
     Ok(())
+}
+
+//NOTE: Utility functions for config.rs
+
+fn is_project_initialized(config_filename: &str) -> Option<PathBuf> {
+    match utils::find_project_config(config_filename) {
+        | Ok(config_path) => Some(config_path),
+        | Err(_) => None,
+    }
+}
+
+fn create_directory(name: &str) {
+    // Errors aren't really errors. If  directory already exists, just ignore it
+    std::fs::create_dir(name).unwrap_or(())
 }

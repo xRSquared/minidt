@@ -8,6 +8,7 @@ mod cli;
 mod config;
 mod constants;
 mod styles;
+mod utils;
 
 fn main() -> Result<()> {
     let args = cli::parse_args();
@@ -22,7 +23,7 @@ fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     println!("Compiling SQL to remove Jinja");
 
     // Fetch project root directory
-    let project_root = config::find_project_config(constants::CONFIG_FILE_NAME)?;
+    let project_root = utils::find_project_config(constants::CONFIG_FILE_NAME)?;
 
     // Initialize MiniJinja environment with a loader
     let mut env = Environment::new();
