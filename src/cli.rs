@@ -10,11 +10,11 @@ use std::path::PathBuf;
 #[command(styles=get_styles())]
 pub struct Cli {
     #[command(subcommand)]
-    pub commands: Commands,
+    pub command: Command,
 }
 
 #[derive(Subcommand, Debug)]
-pub enum Commands {
+pub enum Command {
     /// Initialize a new project
     Init(InitArgs),
     /// Compile SQL to remove jinja
@@ -39,6 +39,11 @@ pub struct CompileArgs {
     #[clap(short = 't', long, default_value_t, value_enum)]
     pub output_type: OutputType,
 }
+
+pub fn parse_args() -> Cli {
+    Cli::parse()
+}
+
 
 #[derive(clap::ValueEnum, Debug, Clone, Default, Serialize)]
 #[serde(rename_all = "kebab-case")]

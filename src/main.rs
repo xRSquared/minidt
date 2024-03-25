@@ -30,10 +30,10 @@ impl Default for Config {
 }
 
 fn main() -> Result<()> {
-    let args = cli::Cli::parse();
-    match args.commands {
-        | cli::Commands::Init(init_args) => init_project(init_args),
-        | cli::Commands::Compile(compile_args) => compile_sql(compile_args),
+    let args = cli::parse_args();
+    match args.command {
+        | cli::Command::Init(init_args) => init_project(init_args),
+        | cli::Command::Compile(compile_args) => compile_sql(compile_args),
     }
 }
 
