@@ -186,8 +186,10 @@ fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     let output_path = if let Some(output) = compile_args.output {
         output
     } else {
+        // Determine output directory path
+        let output_dir = project_root.parent().unwrap().join(&config.outputs_folder);
         // If no output path is provided, construct the output directory based on the input file's parent directory
-        let mut output_dir = PathBuf::from(&config.outputs_folder);
+        let mut output_dir = output_dir.clone();
         if let Some(parent_dir) = input_path.parent() {
             output_dir.push(parent_dir);
         }
