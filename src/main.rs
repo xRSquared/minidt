@@ -130,6 +130,7 @@ fn create_directory(name: &str) {
     std::fs::create_dir(name).unwrap_or(())
 }
 
+// TODO: allow for compiling from test.folder.file which would be relative the project root
 fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     println!("Compiling SQL to remove Jinja");
 
@@ -142,6 +143,27 @@ fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     // Path to template folder from config
     let config = load_config(None)?;
 
+    // Resolve the input file path
+    let input_path = {
+        let templates_abs_path = project_root
+            .parent()
+            .unwrap()
+            .join(&config.templates_folder);
+
+        // Convert the absolute path to a relative path relative to the templates folder
+        if compile_args.file.is_absolute() {
+            let absolute_input_path = compile_args.file.canonicalize()?;
+            let relative_to_templates = absolute_input_path.strip_prefix(&templates_abs_path)?;
+
+            PathBuf::from(relative_to_templates)
+        } else {
+            let relative_path = std::env::current_dir()?.join(&compile_args.file);
+            let relative_to_templates = relative_path.strip_prefix(&templates_abs_path)?;
+
+            PathBuf::from(relative_to_templates)
+        }
+    };
+
     // Get the absolute path to the templates folder based on the project root
     let templates_abs_path =
         std::fs::canonicalize(project_root.parent().unwrap().join(config.templates_folder))
@@ -151,19 +173,20 @@ fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
     // Set the loader with the absolute path to the templates folder
     env.set_loader(path_loader(templates_abs_path));
 
-    println!("Loading templates from {:?}", compile_args.file);
+    println!("Loading templates from {:?}", input_path);
     // Compile SQL template
-    let tmpl = env.get_template(compile_args.file.to_str().unwrap())?;
+
+    let tmpl = env.get_template(input_path.to_str().unwrap())?;
+
     let compiled_sql = tmpl.render(context! {})?;
 
-    // Determine output directory path
     // Determine output file path
     let output_path = if let Some(output) = compile_args.output {
         output
     } else {
         // If no output path is provided, construct the output directory based on the input file's parent directory
         let mut output_dir = PathBuf::from(&config.outputs_folder);
-        if let Some(parent_dir) = compile_args.file.parent() {
+        if let Some(parent_dir) = input_path.parent() {
             output_dir.push(parent_dir);
         }
 
