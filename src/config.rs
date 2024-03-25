@@ -27,7 +27,7 @@ impl Default for Config {
     }
 }
 
-pub fn create_defualt_config(config_file_path: &Path) -> Result<Config> {
+pub fn create_default_config(config_file_path: &Path) -> Result<Config> {
     // If config file doesn't exist, create a default one
     let default_config = Config::default();
     save_config(&default_config, config_file_path)?;
@@ -79,7 +79,7 @@ pub fn init_project(init_args: InitArgs) -> Result<()> {
         // Can do this better, but for now good enough...
         match load_config(None) {
             | Ok(config) => config,
-            | Err(_) => create_defualt_config(Path::new(constants::CONFIG_FILE_NAME))?,
+            | Err(_) => create_default_config(Path::new(constants::CONFIG_FILE_NAME))?,
         }
     };
 
