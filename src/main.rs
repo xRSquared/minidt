@@ -157,7 +157,9 @@ fn compile_sql(compile_args: cli::CompileArgs) -> Result<()> {
 
             PathBuf::from(relative_to_templates)
         } else {
-            let relative_path = std::env::current_dir()?.join(&compile_args.file);
+            let relative_path = std::env::current_dir()?
+                .join(&compile_args.file)
+                .canonicalize()?;
             let relative_to_templates = relative_path.strip_prefix(&templates_abs_path)?;
 
             PathBuf::from(relative_to_templates)
