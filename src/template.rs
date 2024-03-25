@@ -91,7 +91,12 @@ fn resolve_output_path(output_path: Option<&Path>, input_path: &Path,config:&Con
 
 /// Write the compiled SQL output to a file.
 fn write_output_file(output_path: &Path, compiled_sql: &str) -> Result<()> {
-    let mut file = std::fs::File::create(output_path)?;
+    println!("Writing compiled SQL to {:?}", output_path);
+
+    // Create the output directory if it doesn't exist
+    std::fs::create_dir_all(output_path.parent().expect("To create a directory"))?;
+
+    let mut file = std::fs::File::create(output_path).expect("To create a file");
     file.write_all(compiled_sql.as_bytes())?;
     Ok(())
 }
