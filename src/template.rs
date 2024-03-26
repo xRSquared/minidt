@@ -53,12 +53,30 @@ pub fn compile_template(input_path: &Path, output_path: Option<&Path>) -> Result
 
 /// Resolve the input file path relative to the templates folder.
 fn resolve_input_path(input_path: &Path, templates_abs_path: &PathBuf) -> Result<PathBuf> {
-    if input_path.is_absolute() {
-        let absolute_input_path = input_path.canonicalize()?;
+    let mut resolved_path = input_path.to_owned();
+
+    if resolved_path.is_dir() {
+        let config = config::load_config(None)?;
+        let root_template_path = input_path.join(&config.root_template);
+
+        if root_template_path.exists() {
+            resolved_path = root_template_path;
+        } else {
+            return Err(
+                anyhow!("\x1b[1;31mNo valid input file found.\x1b[0m \n Expected file '{}' in the directory '{}'",
+                config.root_template, input_path.display())
+            );
+        }
+    }
+
+    if resolved_path.is_absolute() {
+        let absolute_input_path = resolved_path.canonicalize()?;
         let relative_to_templates = absolute_input_path.strip_prefix(templates_abs_path)?;
         Ok(PathBuf::from(relative_to_templates))
     } else {
-        let relative_path = std::env::current_dir()?.join(input_path).canonicalize()?;
+        let relative_path = std::env::current_dir()?
+            .join(resolved_path)
+            .canonicalize()?;
         let relative_to_templates = relative_path.strip_prefix(templates_abs_path)?;
         Ok(PathBuf::from(relative_to_templates))
     }

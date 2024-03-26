@@ -15,6 +15,7 @@ pub struct Config {
     pub macros_folder: String,
     pub templates_folder: String,
     pub outputs_folder: String,
+    pub root_template: String,
 }
 
 impl Default for Config {
@@ -23,6 +24,7 @@ impl Default for Config {
             macros_folder: constants::MACROS_FOLDER.to_string(),
             templates_folder: constants::TEMPLATES_FOLDER.to_string(),
             outputs_folder: constants::OUTPUTS_FOLDER.to_string(),
+            root_template: constants::ROOT_TEMPLATE.to_string(),
         }
     }
 }
